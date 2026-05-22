@@ -2,17 +2,29 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createScan } from "@/lib/data";
 import UrlInput from "@/components/ui/UrlInput";
 
 export default function Hero() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(url: string) {
     setLoading(true);
-    const scanId = await createScan(url);
-    router.push(`/scan/${scanId}`);
+    setError(null);
+    try {
+      const res = await fetch("/api/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      if (!res.ok) throw new Error("Failed to start audit");
+      const { auditId } = await res.json();
+      router.push(`/scan/${auditId}`);
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
   }
 
   return (
@@ -29,6 +41,9 @@ export default function Hero() {
       <div className="mt-10 w-full flex justify-center">
         <UrlInput onSubmit={handleSubmit} loading={loading} />
       </div>
+      {error && (
+        <p className="mt-4 text-sm text-red-600">{error}</p>
+      )}
     </section>
   );
 }

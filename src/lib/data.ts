@@ -1,12 +1,53 @@
-import { MOCK_SCAN } from "./mock-data";
-import type { Scan } from "./types";
+import { getSupabaseBrowserClient } from "./supabase/client";
+import type { Audit, Recommendation } from "./types";
 
-export async function createScan(url: string): Promise<string> {
-  void url;
-  return MOCK_SCAN.id;
+/**
+ * Fetches a single audit by ID.
+ */
+export async function getAudit(id: string): Promise<Audit> {
+  const supabase = getSupabaseBrowserClient();
+
+  const { data, error } = await supabase
+    .from("audits")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data as Audit;
 }
 
-export async function getScan(id: string): Promise<Scan> {
-  void id;
-  return MOCK_SCAN;
+/**
+ * Fetches all recommendations for an audit, ordered by priority then created_at.
+ */
+export async function getRecommendations(
+  auditId: string
+): Promise<Recommendation[]> {
+  const supabase = getSupabaseBrowserClient();
+
+  const { data, error } = await supabase
+    .from("recommendations")
+    .select("*")
+    .eq("audit_id", auditId)
+    .order("priority", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Recommendation[];
+}
+
+/**
+ * Fetches a single recommendation by ID.
+ */
+export async function getRecommendation(id: string): Promise<Recommendation> {
+  const supabase = getSupabaseBrowserClient();
+
+  const { data, error } = await supabase
+    .from("recommendations")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data as Recommendation;
 }

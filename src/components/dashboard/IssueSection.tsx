@@ -1,12 +1,12 @@
 import Link from "next/link";
-import type { IssueCriticalOrImprove, IssueGood } from "@/lib/types";
+import type { Recommendation } from "@/lib/types";
 
 type Variant = "critical" | "improve" | "good";
 
 interface IssueSectionProps {
   variant: Variant;
-  scanId: string;
-  issues: (IssueCriticalOrImprove | IssueGood)[];
+  auditId: string;
+  recommendations: Recommendation[];
 }
 
 const CONFIG: Record<Variant, { bg: string; label: string; dot: string }> = {
@@ -15,9 +15,9 @@ const CONFIG: Record<Variant, { bg: string; label: string; dot: string }> = {
   good: { bg: "bg-good-bg", label: "Looking good", dot: "bg-emerald-500" },
 };
 
-export default function IssueSection({ variant, scanId, issues }: IssueSectionProps) {
+export default function IssueSection({ variant, auditId, recommendations }: IssueSectionProps) {
   const { bg, label, dot } = CONFIG[variant];
-  const display = issues.slice(0, 3);
+  const display = recommendations.slice(0, 3);
 
   return (
     <section className={`rounded-xl p-6 ${bg}`}>
@@ -28,15 +28,15 @@ export default function IssueSection({ variant, scanId, issues }: IssueSectionPr
         </h2>
       </div>
       <div className="flex flex-col gap-3">
-        {display.map((issue, i) => (
+        {display.map((rec) => (
           <Link
-            key={issue.title}
-            href={`/issue/${scanId}/${variant}-${i}`}
+            key={rec.id}
+            href={`/issue/${auditId}/${rec.id}`}
             className="rounded-lg bg-white/70 p-4 transition-colors hover:bg-white"
           >
-            <h3 className="font-medium text-gray-900">{issue.title}</h3>
+            <h3 className="font-medium text-gray-900">{rec.title}</h3>
             <p className="mt-1 text-sm text-gray-500 line-clamp-2">
-              {issue.description}
+              {rec.description}
             </p>
           </Link>
         ))}
